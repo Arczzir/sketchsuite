@@ -1,0 +1,24 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "name" : "sketchSuite",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "com.bohemiancoding.sketch.runscriptidentifier"
+    ],
+    "title" : "sketchSuite"
+  },
+  "identifier" : "com.example.sketch.f33fc65d-6f36-447a-90db-5e3b1bcaa13a",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "sketchSuite"
+}

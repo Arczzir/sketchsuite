@@ -1,0 +1,259 @@
+var onRun = function(context) {
+  String.prototype.paddingLeft = function (paddingValue) {
+  return String(paddingValue + this).slice(-paddingValue.length);
+};
+
+function hash(color) {
+
+  return [[MSImmutableColor alloc]initWithRed: color.red() green: color.green() blue: color.blue() alpha: color.alpha()].hexValue() + "_" + parseInt(color.alpha()*100)
+}
+
+function styleHash(style) {
+  return style.font.name + "_" + style.font.size + "_" + style.color.hex 
+}
+
+function UIColor(color) {
+  //return "UIColor(r: " + color.red() + " g: "+ color.green() + " b: " + color.blue() +" alpha: " + color.alpha() + ")"
+  return "UIColor(rgb: \"" + color.hexValue() + "\", alpha: " + color.alpha() + ")"
+}
+
+function copy_text(txt){
+  var pasteBoard = [NSPasteboard generalPasteboard]
+  [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:nil]
+  [pasteBoard setString:txt forType:NSPasteboardTypeString]
+}
+
+function rtoh(r) {
+  return {"x": r.origin.x+0.0, "y": r.origin.y+0.0, "width": r.size.width+0.0, "height": r.size.height+0.0}
+}
+
+function rtoh2(r) {
+  return {"x": r.x()+0.0, "y": r.y()+0.0, "width": r.width()+0.0, "height": r.height()+0.0}
+}
+
+function serialize(layer, layers) {
+  switch(layer.class()) {
+    case MSTextLayer:
+      var x = {}
+      x.type = "text"
+      x.color = {}
+      x.color.type = "text"
+      x.color.hex = hash(layer.textColor())
+      x.font = {}
+      x.font.name = layer.fontPostscriptName() + ""
+      x.font.size = layer.fontSize() + ""
+      layers.push(x)
+      break
+    case MSLayerGroup:
+      var children = layer.layers()
+      for(var i=0; i < children.length; i++){
+        serialize(children[i], layers)
+      }
+      break
+    default:
+      var x = {}
+      x.type = "basic"
+      var sl, fill, border
+      layer.styledLayer && (sl = layer.styledLayer())
+      if (fill = sl.style().fills().firstObject()){
+        x.fill = {}
+        x.fill.hex = hash(fill.colorGeneric()) + ""
+        x.fill.type = "fill"
+      }
+
+      if (border = sl.style().borders().firstObject()){
+        x.border = {}
+        x.border.hex = hash(border.colorGeneric()) + ""
+        x.border.type = "border"
+      }
+      layers.push(x)
+      break
+  }
+}
+
+
+function hud(funcs) {
+
+  var identifier = "com.z.sketchsuit";
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  if (threadDictionary[identifier]) {
+    return;
+  }
+  var window = NSPanel.alloc().init();
+  window.setFrame_display(NSMakeRect(0, 0, 380, 420), true);
+  window.setStyleMask(NSTitledWindowMask | NSClosableWindowMask | NSFullSizeContentViewWindowMask);
+  window.setBackgroundColor(NSColor.whiteColor());
+  window.standardWindowButton(NSWindowMiniaturizeButton).setHidden(true);
+  window.standardWindowButton(NSWindowZoomButton).setHidden(true);
+  window.setTitle("HUD3");
+  window.setTitlebarAppearsTransparent(true);
+  window.becomeKeyWindow();
+  window.setLevel(NSFloatingWindowLevel);
+
+  threadDictionary[identifier] = window;
+  COScript.currentCOScript().setShouldKeepAround_(true);
+
+  var closeButton = window.standardWindowButton(NSWindowCloseButton);
+  closeButton.setCOSJSTargetFunction(function(sender) {
+    COScript.currentCOScript().setShouldKeepAround(false);
+    threadDictionary.removeObjectForKey(identifier);
+    window.close();
+  });
+  closeButton.setAction("callAction:");
+
+  var r = CGRectZero
+  r.origin.y = window.contentView().frame().size.height - 30
+
+  for (var i = 0; i<funcs.length; i++) {
+    var button = [[NSButton alloc] init]
+    button.title = " " + funcs[i].title + " "
+    button.sizeToFit()
+    r.size = button.frame().size
+    r.origin.y -= r.size.height + 8
+    button.frame = r
+    [button setCOSJSTargetFunction:funcs[i].callback];
+    window.contentView().addSubview(button);
+  }
+
+  window.center();
+  window.makeKeyAndOrderFront(nil);
+};
+
+function runSys(cmd, args) {
+  var task = NSTask.alloc().init()
+
+  task.launchPath = cmd
+  task.arguments = args
+
+  var pipe = NSPipe.alloc().init()
+  task.standardOutput = pipe
+  task.launch()
+  task.waitUntilExit()
+
+  var data = pipe.fileHandleForReading().readDataToEndOfFile()
+  return [[NSString alloc]initWithData: data encoding: NSUTF8StringEncoding]
+}
+
+function runRuby(args) {
+  runSys("/usr/bin/ruby", args)
+}
+
+function styleWork_iOS() {
+  var all_layers = context.document.currentPage().layers()
+  var layers = []
+
+  for(var i=0; i < all_layers.length; i++){
+    var layer = all_layers[i]
+    serialize(layer, layers)
+  }
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
+
+  [s writeToFile: NSTemporaryDirectory() + "/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+""])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+}
+
+
+function styleWork_macOS() {
+  var all_layers = context.document.currentPage().layers()
+  var layers = []
+
+  for(var i=0; i < all_layers.length; i++){
+    var layer = all_layers[i]
+    serialize(layer, layers)
+  }
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
+
+  [s writeToFile: NSTemporaryDirectory() + "/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+""])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "macOS", (NSTemporaryDirectory()+"")])
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+}
+
+
+function makeView_macOS() {
+  var h = {}
+  var group = context.selection.firstObject()
+  h["bounds"] = rtoh(group.bounds())
+  h["layers"] = []
+  var layers = group.layers()
+  
+
+  for (var i = 0; i < layers.length; i++) {
+    var x = layers[i]
+ 
+    switch(layers[i].class()) {
+      case MSTextLayer:
+        var t = {}
+        t.style = 
+        t.font = x.fontPostscriptName()+""
+        t.fontSize = x.fontSize()
+        t.textColor = hash(x.textColor())
+        t.frame = rtoh2(x.frame())
+        t.text = x.stringValue() + ""
+        t.textAlignment = x.textAlignment() + ""
+        t.name = x.name() + ""
+        h["layers"].push(t)
+        break
+      default:
+        var t = {}
+        t.name = x.name() + ""
+        t.frame = rtoh2(x.frame())
+        h["layers"].push(t)
+        break
+    }
+  }
+  
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(h)];
+
+  [s writeToFile:"/Users/z/Z/Projects/_scripts/Sketch2Swift/k.txt" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  log(runRuby(["/Users/z/Z/Projects/_scripts/Sketch2Swift/makeView_macOS.rb"]))
+  
+  runSys("/usr/bin/open", ["/Users/z/Z/Projects/_scripts/Sketch2Swift/output/"])
+}
+
+
+function Klass(n,o){
+  var m;
+  Mocha[n]={};
+  if(o.init){
+    Mocha[n]=o.init;
+    delete o.init;
+    Mocha[n].reset=function(){this.$={};};
+  }
+  for(m in o){
+    if(m[0]=='_')
+      Mocha[n][m.slice(1)]=o[m];
+    else
+      Mocha[n].prototype[m]=o[m];
+  }
+  delete o;
+  Mocha[n].$={};
+}
+Klass('Fn',{
+  init:
+    function(title, callback){
+      this.title = title
+      this.callback = callback
+    },
+})
+
++function(){
+  hud([
+    new Mocha.Fn("make_palette_iOS", function(){styleWork_iOS()}),
+    new Mocha.Fn("make_palette_macOS", function(){styleWork_macOS()}),
+    //new Mocha.Fn("make_view_macOS", function(){makeView_macOS()}),
+  ])
+}()
+
+
+};
