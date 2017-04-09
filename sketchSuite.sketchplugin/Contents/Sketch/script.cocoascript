@@ -85,7 +85,7 @@ function hud(funcs) {
   window.setBackgroundColor(NSColor.whiteColor());
   window.standardWindowButton(NSWindowMiniaturizeButton).setHidden(true);
   window.standardWindowButton(NSWindowZoomButton).setHidden(true);
-  window.setTitle("HUD3");
+  window.setTitle("HUD");
   window.setTitlebarAppearsTransparent(true);
   window.becomeKeyWindow();
   window.setLevel(NSFloatingWindowLevel);
@@ -117,6 +117,7 @@ function hud(funcs) {
 
   window.center();
   window.makeKeyAndOrderFront(nil);
+  return window
 };
 
 function runSys(cmd, args) {
@@ -177,6 +178,27 @@ function styleWork_macOS() {
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
 }
 
+function selected() { // as context is a one-off
+    var doc = NSDocumentController.sharedDocumentController().currentDocument()
+    var selection = doc.selectedLayers().layers()
+    return selection.firstObject()
+}
+function dup(total, distance, orientation) {
+  var layer = selected()
+  if (layer) {
+    var r = layer.frame()
+    for(i=0;i<total-1;i++){
+        var l = layer.duplicate()
+        var rr = r.copy()
+        if (orientation == 2) {
+            rr.x = r.x() + (i+1)*distance
+        } else if (orientation == 1){
+            rr.y = r.y() + (i+1)*distance
+        }
+        l.frame = rr
+    }
+  }
+}
 
 function makeView_macOS() {
   var h = {}
@@ -221,6 +243,89 @@ function makeView_macOS() {
   runSys("/usr/bin/open", ["/Users/z/Z/Projects/_scripts/Sketch2Swift/output/"])
 }
 
+function add_text_box() {
+  var layer = selected()
+  if (layer) {
+    var container = layer
+		while (container.class() != 'MSPage' && container.class() != 'MSArtboardGroup' && container.class() != 'MSLayerGroup') {
+			container = container.parentGroup()
+		}
+    log(container)
+    var r = layer.frame()
+    var rect = MSRectangleShape.alloc().init();
+    rect.frame = r.copy() 
+    var shapeGroup = MSShapeGroup.shapeWithPath(rect)
+    shapeGroup.style().addStylePartOfType(1);
+    container.addLayers([shapeGroup])
+  }
+}
+
+function DuplicationFeature(window) {
+  var r = CGRectZero
+  r.origin.y = 40
+  var button = [[NSButton alloc] init]
+    button.title = " " + "make text box" + " "
+    button.sizeToFit()
+    r.size = button.frame().size
+    r.origin.y -= r.size.height + 8
+    button.frame = r
+    window.contentView().addSubview(button)
+
+  r.origin.x += r.size.width + 10
+  var label = [NSTextField labelWithString:"distance"]
+  r.size.width = label.frame().size.width
+  label.frame = r
+  window.contentView().addSubview(label)
+
+  r.origin.x += r.size.width
+  r.size.width = 30
+  var offsetEdit = [[NSTextField alloc]init]
+  offsetEdit.frame = r
+  window.contentView().addSubview(offsetEdit)
+ 
+ r.origin.x += r.size.width
+  label = [NSTextField labelWithString:"total"]
+  r.size.width = label.frame().size.width
+  label.frame = r
+  window.contentView().addSubview(label)
+
+  r.origin.x += r.size.width
+  r.size.width = 30
+  var totalEdit = [[NSTextField alloc]init]
+  totalEdit.frame = r
+  window.contentView().addSubview(totalEdit)
+
+  r.origin.x += r.size.width + 10
+  var radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( '→' )
+  radiobutton.sizeToFit()
+  radiobutton.setState( true )
+  radiobutton.setAction("callAction:")
+  r.size.width = radiobutton.frame().size.width
+  radiobutton.frame = r
+  window.contentView().addSubview(radiobutton)
+  var option1 = radiobutton
+  
+  r.origin.x += r.size.width + 10
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( '↓' )
+  radiobutton.sizeToFit()
+  radiobutton.setAction("callAction:")
+  r.size.width = radiobutton.frame().size.width
+  radiobutton.frame = r
+  window.contentView().addSubview(radiobutton)
+  var option2 = radiobutton
+
+  [button setCOSJSTargetFunction: function(){
+    var o = (option1.state() + 0) * 2 + (option2.state() + 0)
+    var total = parseInt(totalEdit.stringValue())
+    var distance = parseFloat(offsetEdit.stringValue())
+    dup(total, distance, o)
+  }];
+
+}
 
 function Klass(n,o){
   var m;
@@ -248,11 +353,14 @@ Klass('Fn',{
 })
 
 +function(){
-  hud([
+  var window = hud([
     new Mocha.Fn("make_palette_iOS", function(){styleWork_iOS()}),
     new Mocha.Fn("make_palette_macOS", function(){styleWork_macOS()}),
+    new Mocha.Fn("add_text_box", function(){add_text_box()}),
     //new Mocha.Fn("make_view_macOS", function(){makeView_macOS()}),
   ])
+  
+  DuplicationFeature(window)
 }()
 
 
