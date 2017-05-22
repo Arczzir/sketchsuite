@@ -289,7 +289,7 @@ function DuplicationFeature(window) {
   var r = CGRectZero
   r.origin.y = 40
   var button = [[NSButton alloc] init]
-    button.title = " " + "make text box" + " "
+    button.title = " " + "make_copies" + " "
     button.sizeToFit()
     r.size = button.frame().size
     r.origin.y -= r.size.height + 8
@@ -379,10 +379,10 @@ Klass('Fn',{
 
 +function(){
   var window = hud([
-    new Mocha.Fn("make_palette_iOS", function(){styleWork_iOS()}),
-    new Mocha.Fn("make_palette_macOS", function(){styleWork_macOS()}),
+    new Mocha.Fn("make_palette_for_iOS", function(){styleWork_iOS()}),
+    new Mocha.Fn("make_palette_for_macOS", function(){styleWork_macOS()}),
     new Mocha.Fn("add_text_box", function(){add_text_box()}),
-    new Mocha.Fn("export_view_swift", function(){export_view_swift()}),
+    new Mocha.Fn("export_UIView_in_Swift", function(){export_view_swift()}),
     //new Mocha.Fn("make_view_macOS", function(){makeView_macOS()}),
   ])
   
