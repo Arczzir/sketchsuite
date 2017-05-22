@@ -8,7 +8,7 @@ extension UIColor {
 
 extension UIFont {
 <% fonts.uniq!;max=fonts.map{|x| x.var.length}.max;max2=fonts.map{|x|x.name.length}.max;fonts.sort_by{|x|[x.name, x.size.to_i]}.each do |font| -%>
-    static var <%= font.var %>: <%= " "*(max-font.var.length)%>UIFont { return UIFont(name: "<%= font.name%>", <%= " "* (max2-font.name.length)%>size: <%= font.size%>)! }
+    class var <%= font.var %>: <%= " "*(max-font.var.length)%>UIFont { return UIFont(name: "<%= font.name%>", <%= " "* (max2-font.name.length)%>size: <%= font.size%>)! }
 <%- end -%>
 }
 

@@ -57,7 +57,7 @@ class Style < JSONable
   end
 end
 
-result = JSON.parse(File.read("#{$*[1]}/kk.txt"))
+result = JSON.parse(File.read("#{$*[1]}/kk.json"), :external_encoding => 'utf-8')
 #print JSON.pretty_generate(result)
 
 
@@ -99,6 +99,7 @@ result.each {|layer|
 }
 
 fonts = styles.map{|style|style.font}
+
 
 e = ERB.new(File.read("./style_#{$*[0]}.swift"), nil, '-').result
 outputDir = "#{$*[1]}/output/"
