@@ -40,15 +40,17 @@ function serialize(layer, layers, name, frame) {
     if (name !== null) {
         x.name = name + ""
     } else {
-        
         x.name = layer.name() + ""
     }
+
     if (frame !== null) {
         x.frame = frame
     } else {
         x.frame = rtoh2(layer.frame())
     }
+
     switch(layer.class()) {
+
         case MSTextLayer:
             x.type = "text"
             x.color = {}
@@ -58,6 +60,7 @@ function serialize(layer, layers, name, frame) {
             x.font.name = layer.fontPostscriptName() + ""
             x.font.size = layer.fontSize() + ""
             x.textAlignment = layer.textAlignment() + ""
+            x.text = layer.stringValue() + ""
             layers.push(x)
             break
         case  MSShapeGroup:
@@ -68,9 +71,13 @@ function serialize(layer, layers, name, frame) {
             break
         case MSLayerGroup:
             var children = layer.layers()
+            var sublayers = []
             for(var i=0; i < children.length; i++){
-                serialize(children[i], layers, null, null)
+                serialize(children[i], sublayers, null, null)
             }
+            x.type = "basic"
+            x.sublayers = sublayers
+            layers.push(x)
             break
         case MSArtboardGroup:
             var children = layer.layers()
@@ -87,7 +94,7 @@ function serialize(layer, layers, name, frame) {
                 layer.styledLayer && (sl = layer.styledLayer())
                 if (border = sl.style().borders().firstObject()){
                     x.border = {}
-                    x.border.hex = hash(border.colorGeneric()) + ""
+                    x.border.hex = hash(border.color()) + ""
                     x.border.type = "border"
                     x.border.thickness = border.thickness() + ""
                 }
@@ -100,18 +107,21 @@ function serialize(layer, layers, name, frame) {
             layer.styledLayer && (sl = layer.styledLayer())
             if (fill = sl.style().fills().firstObject()){
                 x.fill = {}
-                x.fill.hex = hash(fill.colorGeneric()) + ""
+                x.fill.hex = hash(fill.color()) + ""
                 x.fill.type = "fill"
             }
             
             if (border = sl.style().borders().firstObject()){
                 x.border = {}
-                x.border.hex = hash(border.colorGeneric()) + ""
+                x.border.hex = hash(border.color()) + ""
                 x.border.type = "border"
                 x.border.thickness = border.thickness() + ""
             }
             layers.push(x)
             break
+        case MSSymbolInstance:
+            x.type = "basic"
+            layers.push(x)
         default:
             break
     }
@@ -211,6 +221,24 @@ function styleWork_iOS() {
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
 
+function styleWork_iOS_objc() {
+  var all_layers = context.document.currentPage().layers()
+  var layers = []
+
+  for(var i=0; i < all_layers.length; i++){
+    var layer = all_layers[i]
+    serialize(layer, layers)
+  }
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
+
+  [s writeToFile: NSTemporaryDirectory() + "/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style_objc.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
+}
+
 
 function styleWork_macOS() {
   var all_layers = context.document.currentPage().layers()
@@ -281,6 +309,22 @@ function export_view_swift() {
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
   var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_swift.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+}
+
+function export_view_objc() {
+  
+  var layers = []
+  serialize(context.selection.firstObject(), layers, null, null)
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
+
+  [s writeToFile: NSTemporaryDirectory() + "/kkk_objc.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_objc.rb"), "iOS", (NSTemporaryDirectory()+"")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
 }
@@ -380,10 +424,11 @@ Klass('Fn',{
 +function(){
   var window = hud([
     new Mocha.Fn("make_palette_for_iOS", function(){styleWork_iOS()}),
+    new Mocha.Fn("make_palette_for_iOS_ObjC", function(){styleWork_iOS_objc()}),
     new Mocha.Fn("make_palette_for_macOS", function(){styleWork_macOS()}),
     new Mocha.Fn("add_text_box", function(){add_text_box()}),
     new Mocha.Fn("export_UIView_in_Swift", function(){export_view_swift()}),
-    //new Mocha.Fn("make_view_macOS", function(){makeView_macOS()}),
+    new Mocha.Fn("export_UIView_in_ObjC", function(){export_view_objc()}),
   ])
   
   DuplicationFeature(window)

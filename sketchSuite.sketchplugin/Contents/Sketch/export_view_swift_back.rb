@@ -72,16 +72,16 @@ class CGRect
     "CGRect(x: #{@x}, y: #{@y}, width: #{@width}, height: #{@height})"
   end
   def midX
-    @x + @width / 2
+    x + width / 2
   end
   def midY
-    @y + @height / 2
+    y + height / 2
   end
   def maxX
-    @x + @width
+    x + width
   end
   def maxY
-    @y + @height
+    y + height
   end
 end
 
@@ -132,7 +132,6 @@ M
   def initialize(h)
     @name = h["name"]
     @declaration = "var #{name} = UIView()"
-    @declaration_objc = "@property (nonatomic, strong) UIView *#{name};"
     @frame = CGRect.new(h["frame"])
   end
 end
@@ -155,15 +154,12 @@ class TextView < View
         "Center"
     end
     
-    if @name.end_with?('label')
+    if @name.start_with?('label')
       @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UILabel *#{name};"
-    elsif @name.end_with?('edit')
-      @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UITextField *#{name};"
-    elsif @name.end_with?('text')
-      @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UITextView *#{name};"
+    elsif @name.start_with?('edit')
+      @declaration = "var #{name} = DATextEdit()"
+    elsif @name.start_with?('text')
+      @declaration = "var #{name} = DATextArea()"
     end
   end
 
@@ -185,11 +181,11 @@ result = JSON.parse(File.read("#{$*[1]}/kkk.json"))
 
 components = []
 bounds = nil
-host = result[0]["name"]
-
-result[0]["sublayers"].each_with_index {|layer, i|
-  if i == 0
+host = nil
+result.each_with_index {|layer, i|
+  if i == 0 
     bounds = CGRect.new(layer["frame"])
+    host = layer["name"]
     next
   end
 
@@ -216,6 +212,8 @@ result[0]["sublayers"].each_with_index {|layer, i|
   end
   components << v
 }
+
+
 
 e = ERB.new(File.read("./view_#{$*[0]}.swift"), nil, '-').result
 outputDir = "#{$*[1]}/output/"

@@ -112,10 +112,13 @@ processLayers(result)
 @fonts = @styles.map{|style|style.font}
 
 
-e = ERB.new(File.read("./style_#{$*[0]}.swift"), nil, '-').result
+eh = ERB.new(File.read("./style_#{$*[0]}.h"), nil, '-').result
+em = ERB.new(File.read("./style_#{$*[0]}.m"), nil, '-').result
 outputDir = "#{$*[1]}/output/"
 FileUtils.mkdir_p outputDir
-File.open("#{outputDir}/palette.swift", 'w') {|file|
-    file.write e
+File.open("#{outputDir}/palette.h", 'w') {|file|
+    file.write eh
 }
-
+File.open("#{outputDir}/palette.m", 'w') {|file|
+    file.write em
+}

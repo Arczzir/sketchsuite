@@ -1,33 +1,43 @@
 
-import Cocoa
-import DAFoundation_macOS
+#import "UIColor+INColor.h"
+#import "UIColor+Palette.h"
+#import "<%=host%>.h"
 
-class View1: UIView {
+@interface <%=host%>()
+<%- components.each_with_index do |x, i| -%>
+<%= x.declaration_objc%>
+<%- end -%>
+@end
 
-    <%- components.each_with_index do |x, i| -%>
-    <%= x.declaration%>
-    <%- end -%>
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+static CGRect referenceFrame = {<%= bounds.x%>, <%= bounds.y%>, <%= bounds.width%>, <%= bounds.height%>};
+
+@implementation <%=host%>
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
         <%- components.each_with_index do |x, i| -%>
-        <%= x.setup%>
+        <%= x.initialization_objc%>
+        <%= x.setup -%>
+        [self addSubview:_<%= x.name%>];
         <%- end -%>
-        <%- components.each_with_index do |x, i| -%>
-        addSubview(<%= x.name%>)
-        <%- end -%>
     }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func resizeSubviews(withOldSize oldSize: NSSize)  {
-        var c = DAConstrains()
-        <% components.each_with_index do |x, i| %>
-        <%= x.constrains(bounds)%>
-        <% end %>
-
-    }
+    return self;
 }
+
+- (void)layoutSubviews {
+    CGFloat frameScale = self.bounds.size.width / referenceFrame.size.width;
+    
+    <%- components.each_with_index do |x, i| -%>
+    self.<%= x.name%>.frame = CGRectApplyAffineTransform(CGRectMake(<%= x.frame.x%>, <%= x.frame.y%>, <%= x.frame.width%>, <%= x.frame.height%>), CGAffineTransformScale(CGAffineTransformIdentity, frameScale, frameScale));
+    <%- end -%>
+}
+
+- (void)setFrameSizeByWidthProportionally:(CGFloat)width {
+    CGRect r = self.frame;
+    r.size.height = referenceFrame.size.height * width / referenceFrame.size.width;
+    r.size.width = width;
+    self.frame = r;
+}
+@end
 
