@@ -87,7 +87,7 @@ end
 
 class View
   attr_accessor :frame
-  attr_accessor :name, :declaration
+  attr_accessor :name, :declaration, :declaration_objc, :initialization_objc
   
   def transform
     "#{@name}.transform = Geometry.referringMatrix"
@@ -132,7 +132,6 @@ M
   def initialize(h)
     @name = h["name"]
     @declaration = "var #{name} = UIView()"
-    @declaration_objc = "@property (nonatomic, strong) UIView *#{name};"
     @frame = CGRect.new(h["frame"])
   end
 end
@@ -141,36 +140,40 @@ end
 
 
 class TextView < View
-  attr_accessor :style
+  attr_accessor :style, :text
   attr_accessor :alignment
 
   def initialize(h)
     super(h)
+
+    @text = h["text"]
+
     @alignment = case (h["textAlignment"]) 
-      when "0"
-        "Left"
+      when "4","0"
+        "left"
       when "1"
-        "Right"
+        "right"
+      when "2"
+        "center"
       else
-        "Center"
+        "left"
     end
     
-    if @name.end_with?('label')
-      @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UILabel *#{name};"
-    elsif @name.end_with?('edit')
-      @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UITextField *#{name};"
-    elsif @name.end_with?('text')
-      @declaration = "var #{name} = DALabel()"
-      @declaration_objc = "@property (nonatomic, strong) UITextView *#{name};"
+    if @name.end_with?('Label')
+      @declaration = "var #{name} = UILabel()"
+    elsif @name.end_with?('Edit')
+      @declaration = "var #{name} = UITextField()"
+    elsif @name.end_with?('Text')
+      @declaration = "var #{name} = UITextView()"
     end
   end
 
   def setup
 <<"M" + "        " + super()
-#{@name}.style = Style.#{@style.var}
-        #{@name}.textAlignment = NSTextAlignment.#{@alignment}
+#{@name}.font = UIFont.#{@style.font.var}
+        #{@name}.textColor = UIColor.#{@style.color.var}
+        #{@name}.textAlignment = .#{@alignment}
+        #{@name}.text = "#{@text}"
 M
   end
   
@@ -180,6 +183,24 @@ class Line < View
   attr_accessor :thickness
 end
 
+class ImageView < View
+  def initialize(h)
+    super(h)
+    @declaration = "var #{name} = UIImageView()"
+  end
+  def setup
+<<"M" + "        " + super()
+#{@name}.image = UIImage(named: "#{@name}")
+M
+  end
+end
+
+class ButtonView < View
+  def initialize(h)
+    super(h)
+    @declaration = "var #{name} = UIButton()"
+  end
+end
 
 result = JSON.parse(File.read("#{$*[1]}/kkk.json"))
 
@@ -192,7 +213,7 @@ result[0]["sublayers"].each_with_index {|layer, i|
     bounds = CGRect.new(layer["frame"])
     next
   end
-
+p layer["type"]
   case layer["type"]
   when "line"
     next
@@ -212,7 +233,13 @@ result[0]["sublayers"].each_with_index {|layer, i|
 
     v.style = style
   when "basic"
-    v = View.new(layer)
+    if layer["name"].end_with?('Btn')
+      v = ButtonView.new(layer)
+    elsif layer["name"].end_with?('Icon') || layer["name"].end_with?('ImageView')
+      v = ImageView.new(layer)
+    else
+      v = View.new(layer)
+    end
   end
   components << v
 }

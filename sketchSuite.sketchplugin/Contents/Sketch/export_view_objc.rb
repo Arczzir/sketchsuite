@@ -151,12 +151,14 @@ class TextView < View
     @text = h["text"]
 
     @alignment = case (h["textAlignment"]) 
-      when "0"
-        "Left"
+      when "4","0"
+        "left"
       when "1"
-        "Right"
+        "right"
+      when "2"
+        "center"
       else
-        "Center"
+        "left"
     end
     
     if @name.end_with?('Label')
@@ -212,7 +214,7 @@ class ButtonView < View
   end
 end
 
-result = JSON.parse(File.read("#{$*[1]}/kkk_objc.json"))
+result = JSON.parse(File.read("#{$*[1]}/kkk.json"))
 
 components = []
 bounds = nil

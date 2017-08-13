@@ -34,7 +34,6 @@ function rtoh2(r) {
 }
 
 function serialize(layer, layers, name, frame) {
-    
     var x = {}
     
     if (name !== null) {
@@ -99,6 +98,9 @@ function serialize(layer, layers, name, frame) {
                     x.border.thickness = border.thickness() + ""
                 }
                 layers.push(x)
+            } else {
+              x.type = "basic"
+              layers.push(x)
             }
             break
         case MSRectangleShape:
@@ -320,13 +322,29 @@ function export_view_objc() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kkk_objc.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
   var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_objc.rb"), "iOS", (NSTemporaryDirectory()+"")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+}
+
+function generate_file_by_names_in_ObjC() {
+  var layers = []
+  serialize(context.selection.firstObject(), layers, null, null)
+
+  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
+
+  [s writeToFile: NSTemporaryDirectory() + "/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/generateObjcFileByNames.rb"), (NSTemporaryDirectory()+"")])
+  
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+
 }
 
 function DuplicationFeature(window) {
@@ -429,6 +447,7 @@ Klass('Fn',{
     new Mocha.Fn("add_text_box", function(){add_text_box()}),
     new Mocha.Fn("export_UIView_in_Swift", function(){export_view_swift()}),
     new Mocha.Fn("export_UIView_in_ObjC", function(){export_view_objc()}),
+    new Mocha.Fn("generate_file_by_names_in_ObjC", function(){generate_file_by_names_in_ObjC()}),
   ])
   
   DuplicationFeature(window)

@@ -27,9 +27,10 @@ static CGRect referenceFrame = {<%= bounds.x%>, <%= bounds.y%>, <%= bounds.width
 
 - (void)layoutSubviews {
     CGFloat frameScale = self.bounds.size.width / referenceFrame.size.width;
+    CGAffineTransform transform = CGAffineTransformScale(CGAffineTransformIdentity, frameScale, frameScale); 
     
     <%- components.each_with_index do |x, i| -%>
-    self.<%= x.name%>.frame = CGRectApplyAffineTransform(CGRectMake(<%= x.frame.x%>, <%= x.frame.y%>, <%= x.frame.width%>, <%= x.frame.height%>), CGAffineTransformScale(CGAffineTransformIdentity, frameScale, frameScale));
+    self.<%= x.name%>.frame = CGRectApplyAffineTransform(CGRectMake(<%= x.frame.x%>, <%= x.frame.y%>, <%= x.frame.width%>, <%= x.frame.height%>), transform);
     <%- end -%>
 }
 
