@@ -216,9 +216,9 @@ function styleWork_iOS() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "ouput/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "iOS", (NSTemporaryDirectory()+"output")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
@@ -234,9 +234,9 @@ function styleWork_iOS_objc() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "output/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style_objc.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style_objc.rb"), "iOS", (NSTemporaryDirectory()+"output")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
@@ -253,9 +253,9 @@ function styleWork_macOS() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  log([s writeToFile: NSTemporaryDirectory() + "/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil])
+  log([s writeToFile: NSTemporaryDirectory() + "output/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil])
 
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "macOS", (NSTemporaryDirectory()+"")])
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "macOS", (NSTemporaryDirectory()+"output")])
 
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
@@ -306,13 +306,12 @@ function export_view_swift() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_swift.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_swift.rb"), "iOS", (NSTemporaryDirectory()+"output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
 
 function export_view_objc() {
@@ -322,13 +321,12 @@ function export_view_objc() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_objc.rb"), "iOS", (NSTemporaryDirectory()+"")])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_objc.rb"), "iOS", (NSTemporaryDirectory()+"output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
 
 function generate_file_by_names_in_ObjC() {
@@ -337,13 +335,12 @@ function generate_file_by_names_in_ObjC() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/"])
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/generateObjcFileByNames.rb"), (NSTemporaryDirectory()+"")])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/generateObjcFileByNames.rb"), (NSTemporaryDirectory()+"output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"/output/"])
+  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 
 }
 
@@ -440,6 +437,7 @@ Klass('Fn',{
 })
 
 +function(){
+  runSys("/bin/mkdir", ["-p", NSTemporaryDirectory()+"output/"])
   var window = hud([
     new Mocha.Fn("make_palette_for_iOS", function(){styleWork_iOS()}),
     new Mocha.Fn("make_palette_for_iOS_ObjC", function(){styleWork_iOS_objc()}),
