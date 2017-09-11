@@ -124,6 +124,9 @@ function serialize(layer, layers, name, frame) {
         case MSSymbolInstance:
             x.type = "basic"
             layers.push(x)
+        case MSSliceLayer:
+            x.type = "basic"
+            layers.push(x)
         default:
             break
     }

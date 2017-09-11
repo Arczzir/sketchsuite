@@ -18,7 +18,7 @@ static CGRect referenceFrame = {<%= bounds.x%>, <%= bounds.y%>, <%= bounds.width
     if (self) {
         <%- components.each_with_index do |x, i| -%>
         <%= x.initialization_objc%>
-        <%= x.setup -%>
+        <%= x.setup_objc -%>
         [self addSubview:_<%= x.name%>];
         <%- end -%>
     }

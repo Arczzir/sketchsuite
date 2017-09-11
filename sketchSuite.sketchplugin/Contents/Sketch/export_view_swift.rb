@@ -293,7 +293,7 @@ result[0]["sublayers"].each_with_index {|layer, i|
   end
   components << v
 }
-p components
+
 e = ERB.new(File.read("./view_#{$*[0]}.swift"), nil, '-').result
 outputDir = "#{$*[1]}/output/"
 FileUtils.mkdir_p outputDir
