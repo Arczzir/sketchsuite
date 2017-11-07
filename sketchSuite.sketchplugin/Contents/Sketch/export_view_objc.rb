@@ -263,6 +263,7 @@ end
 
 class ImageView < View
   def initialize(h)
+    p h
     super(h)
     @declaration = "var #{name} = UIImageView()"
     @declaration_objc = "@property (nonatomic, strong) UIImageView *#{name};"
@@ -313,6 +314,8 @@ result[0]["sublayers"].each_with_index {|layer, i|
     bounds = CGRect.new(layer["frame"])
     next
   end
+
+  p layer
   
   case layer["type"]
   when "line"
@@ -332,7 +335,7 @@ result[0]["sublayers"].each_with_index {|layer, i|
   components << v
 }
 
-
+p components
 
 
 

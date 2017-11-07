@@ -256,7 +256,7 @@ function styleWork_macOS() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  log([s writeToFile: NSTemporaryDirectory() + "output/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil])
+  [s writeToFile: NSTemporaryDirectory() + "output/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "macOS", (NSTemporaryDirectory()+"output")])
 
