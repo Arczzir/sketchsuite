@@ -1,7 +1,7 @@
 # sketchsuite
 A sketch plugin provides following features:
 
-![Interface](https://pbs.twimg.com/media/DAaj5zZVYAAswuj.png:small)
+![Interface](https://pbs.twimg.com/media/DOFwWYoVoAAywsS.png:small)
 
 #### Analyze all layers' colors and fonts on current page, then generate ```palette.swift``` like this:
 ```swift
