@@ -103,7 +103,7 @@ function serialize(layer, layers, name, frame) {
               layers.push(x)
             }
             break
-        case MSRectangleShape:
+        case MSRectangleShape, MSOvalShape:
             x.type = "basic"
             var sl, fill, border
             layer.styledLayer && (sl = layer.styledLayer())
