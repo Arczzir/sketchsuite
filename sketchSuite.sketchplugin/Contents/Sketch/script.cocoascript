@@ -208,7 +208,7 @@ function runRuby(args) {
   runSys("/usr/bin/ruby", args)
 }
 
-function styleWork_iOS() {
+function styleWork(lang, os) {
   var all_layers = context.document.currentPage().layers()
   var layers = []
 
@@ -219,49 +219,14 @@ function styleWork_iOS() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "ouput/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "iOS", (NSTemporaryDirectory()+"output")])
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/" + "style.rb"), lang, os, (NSTemporaryDirectory()+"output")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
-}
-
-function styleWork_iOS_objc() {
-  var all_layers = context.document.currentPage().layers()
-  var layers = []
-
-  for(var i=0; i < all_layers.length; i++){
-    var layer = all_layers[i]
-    serialize(layer, layers)
-  }
-
-  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
-
-  [s writeToFile: NSTemporaryDirectory() + "output/kk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
-
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style_objc.rb"), "iOS", (NSTemporaryDirectory()+"output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
 
-
-function styleWork_macOS() {
-  var all_layers = context.document.currentPage().layers()
-  var layers = []
-
-  for(var i=0; i < all_layers.length; i++){
-    var layer = all_layers[i]
-    serialize(layer, layers, null, null)
-  }
-
-  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
-
-  [s writeToFile: NSTemporaryDirectory() + "output/kk.txt" atomically:true encoding:NSUTF8StringEncoding error:nil]
-
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/style.rb"), "macOS", (NSTemporaryDirectory()+"output")])
-
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
-}
 
 function selected() { // as context is a one-off
     var doc = NSDocumentController.sharedDocumentController().currentDocument()
@@ -302,7 +267,7 @@ function add_text_box() {
   }
 }
 
-function export_view_swift() {
+function export_view(lang, os) {
   
   var layers = []
   serialize(context.selection.firstObject(), layers, null, null)
@@ -311,26 +276,12 @@ function export_view_swift() {
 
   [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
-  
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_swift.rb"), "iOS", (NSTemporaryDirectory()+"output")])
-  
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
-}
-
-function export_view_objc() {
-  
-  var layers = []
-  serialize(context.selection.firstObject(), layers, null, null)
-
-  var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
-
-  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
-
-  
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/export_view_objc.rb"), "iOS", (NSTemporaryDirectory()+"output")])
+  var rbfile = "/export_view_" + lang + "_" + os + ".rb";
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + rbfile), (NSTemporaryDirectory()+"output")])
   
   runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
 }
+
 
 function generate_file_by_names_in_ObjC() {
   var layers = []
@@ -414,6 +365,197 @@ function DuplicationFeature(window) {
 
 }
 
+function PaletteFeature(window) {
+  var r = CGRectZero
+  r.origin.y = 120
+  var button = [[NSButton alloc] init]
+    button.title = " " + "make_palette" + " "
+    button.sizeToFit()
+    r.size = button.frame().size
+    r.origin.y -= r.size.height + 8
+    button.frame = r
+    window.contentView().addSubview(button)
+
+
+  var g1 = [[NSView alloc] init]
+
+
+  r.origin.x += r.size.width + 10
+
+  var r1 = CGRectZero
+  var radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'iOS' )
+  radiobutton.sizeToFit()
+  radiobutton.setState( true )
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g1.addSubview(radiobutton)
+  var option1 = radiobutton
+  
+  r1.origin.x += r1.size.width + 10
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'macOS' )
+  radiobutton.sizeToFit()
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g1.addSubview(radiobutton)
+  var option2 = radiobutton
+
+  r.size.width = r1.origin.x + r1.size.width
+  g1.frame = r
+
+  window.contentView().addSubview(g1)
+
+
+  var g2 = [[NSView alloc] init]
+
+
+  r.origin.x += r.size.width + 10
+
+  r1 = CGRectZero
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'Swift' )
+  radiobutton.sizeToFit()
+  radiobutton.setState( true )
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g2.addSubview(radiobutton)
+  var option3 = radiobutton
+  
+  r1.origin.x += r1.size.width + 10
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'ObjC' )
+  radiobutton.sizeToFit()
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g2.addSubview(radiobutton)
+  var option4 = radiobutton
+
+  r.size.width = r1.origin.x + r1.size.width
+  g2.frame = r
+
+  window.contentView().addSubview(g2)
+
+  [button setCOSJSTargetFunction: function(){
+    var lang = (option3.state() ? "Swift" : "ObjC")
+    var os = (option1.state() ? "iOS" : "macOS")
+    styleWork(lang, os)
+  }];
+
+  [option1 setCOSJSTargetFunction: function(){
+    option4.enabled = true
+  }];
+
+  [option2 setCOSJSTargetFunction: function(){
+    option3.state = 1 
+    option4.enabled = false
+  }];
+
+}
+function ExportViewFeature(window) {
+  var r = CGRectZero
+  r.origin.y = 90
+  var button = [[NSButton alloc] init]
+    button.title = " " + "export_view" + " "
+    button.sizeToFit()
+    r.size = button.frame().size
+    r.origin.y -= r.size.height + 8
+    button.frame = r
+    window.contentView().addSubview(button)
+
+
+  var g1 = [[NSView alloc] init]
+
+
+  r.origin.x += r.size.width + 10
+
+  var r1 = CGRectZero
+  var radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'iOS' )
+  radiobutton.sizeToFit()
+  radiobutton.setState( true )
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g1.addSubview(radiobutton)
+  var option1 = radiobutton
+  
+  r1.origin.x += r1.size.width + 10
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'macOS' )
+  radiobutton.sizeToFit()
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g1.addSubview(radiobutton)
+  var option2 = radiobutton
+
+  r.size.width = r1.origin.x + r1.size.width
+  g1.frame = r
+
+  window.contentView().addSubview(g1)
+
+
+  var g2 = [[NSView alloc] init]
+
+
+  r.origin.x += r.size.width + 10
+
+  r1 = CGRectZero
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'Swift' )
+  radiobutton.sizeToFit()
+  radiobutton.setState( true )
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g2.addSubview(radiobutton)
+  var option3 = radiobutton
+  
+  r1.origin.x += r1.size.width + 10
+  radiobutton = [[NSButton alloc] init]
+  radiobutton.setButtonType(NSRadioButton)
+  radiobutton.setTitle( 'ObjC' )
+  radiobutton.sizeToFit()
+  radiobutton.setAction("callAction:")
+  r1.size = radiobutton.frame().size
+  radiobutton.frame = r1
+  g2.addSubview(radiobutton)
+  var option4 = radiobutton
+
+  r.size.width = r1.origin.x + r1.size.width
+  g2.frame = r
+
+  window.contentView().addSubview(g2)
+
+  [button setCOSJSTargetFunction: function(){
+    var lang = (option3.state() ? "Swift" : "ObjC")
+    var os = (option1.state() ? "iOS" : "macOS")
+    export_view(lang, os)
+  }];
+
+  [option1 setCOSJSTargetFunction: function(){
+    option4.enabled = true
+  }];
+
+  [option2 setCOSJSTargetFunction: function(){
+    option3.state = 1 
+    option4.enabled = false
+  }];
+
+}
+
 function Klass(n,o){
   var m;
   Mocha[n]={};
@@ -442,16 +584,13 @@ Klass('Fn',{
 +function(){
   runSys("/bin/mkdir", ["-p", NSTemporaryDirectory()+"output/"])
   var window = hud([
-    new Mocha.Fn("make_palette_for_iOS", function(){styleWork_iOS()}),
-    new Mocha.Fn("make_palette_for_iOS_ObjC", function(){styleWork_iOS_objc()}),
-    new Mocha.Fn("make_palette_for_macOS", function(){styleWork_macOS()}),
-    new Mocha.Fn("add_text_box", function(){add_text_box()}),
-    new Mocha.Fn("export_UIView_in_Swift", function(){export_view_swift()}),
-    new Mocha.Fn("export_UIView_in_ObjC", function(){export_view_objc()}),
+    new Mocha.Fn("add_box", function(){add_box()}),
     new Mocha.Fn("generate_file_by_names_in_ObjC", function(){generate_file_by_names_in_ObjC()}),
   ])
   
   DuplicationFeature(window)
+  ExportViewFeature(window)
+  PaletteFeature(window) 
 }()
 
 

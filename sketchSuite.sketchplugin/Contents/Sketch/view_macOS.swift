@@ -1,8 +1,7 @@
 
-import UIKit
-import DAFoundation_iOS
+import DAFoundation_macOS
+import DAKit_macOS
 
-fileprivate let referenceFrame = CGRect(x: <%= bounds.x%>, y: <%= bounds.y%>, width: <%= bounds.width%>, height: <%= bounds.height%>)
 
 class <%=host%>: UIView {
 
@@ -33,18 +32,5 @@ class <%=host%>: UIView {
         <% end %>
     }
 
-    override func layoutSubviews() {
-        let frameScale = self.bounds.size.width / referenceFrame.size.width
-        let transform = CGAffineTransform(scaleX: frameScale, y: frameScale)
-   
-        <%- components.each_with_index do |x, i| -%>
-        <%= x.name%>.frame = CGRect(x: <%= x.frame.x%>, y: <%= x.frame.y%>, width: <%= x.frame.width%>, height: <%= x.frame.height%>).applying(transform)
-        <%- end -%>
-    }
-
-    func setFrameSizeByWidthProportionally(_ width: CGFloat) {
-        frame.size.height = referenceFrame.size.height * width / referenceFrame.size.width;
-        frame.size.width = width;
-    }
 }
 

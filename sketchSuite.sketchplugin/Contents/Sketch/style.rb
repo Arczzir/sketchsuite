@@ -57,7 +57,7 @@ class Style < JSONable
   end
 end
 
-result = JSON.parse(File.read("#{$*[1]}/kk.json"), :external_encoding => 'utf-8')
+result = JSON.parse(File.read("#{$*[2]}/kkk.json"), :external_encoding => 'utf-8')
 #print JSON.pretty_generate(result)
 
 def processLayers(layers)
@@ -111,11 +111,23 @@ processLayers(result)
 
 @fonts = @styles.map{|style|style.font}
 
-
-e = ERB.new(File.read("./style_#{$*[0]}.swift"), nil, '-').result
-outputDir = "#{$*[1]}/output/"
-FileUtils.mkdir_p outputDir
-File.open("#{outputDir}/palette.swift", 'w') {|file|
-    file.write e
-}
-
+case $*[0]
+when "ObjC"
+  eh = ERB.new(File.read("./style_iOS.h"), nil, '-').result
+  em = ERB.new(File.read("./style_iOS.m"), nil, '-').result
+  outputDir = "#{$*[2]}/output/"
+  FileUtils.mkdir_p outputDir
+  File.open("#{outputDir}/palette.h", 'w') {|file|
+      file.write eh
+  }
+  File.open("#{outputDir}/palette.m", 'w') {|file|
+      file.write em
+  }
+when "Swift" 
+  e = ERB.new(File.read("./style_#{$*[1]}.swift"), nil, '-').result
+  outputDir = "#{$*[2]}/output/"
+  FileUtils.mkdir_p outputDir
+  File.open("#{outputDir}/palette.swift", 'w') {|file|
+      file.write e
+  }
+end
