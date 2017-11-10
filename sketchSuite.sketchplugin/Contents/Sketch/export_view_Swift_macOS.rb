@@ -264,7 +264,7 @@ M
   end
 end
 
-result = JSON.parse(File.read("#{$*[1]}/kkk.json"))
+result = JSON.parse(File.read("#{$*[0]}/kkk.json"))
 
 components = []
 bounds = nil
@@ -294,8 +294,8 @@ result[0]["sublayers"].each_with_index {|layer, i|
   components << v
 }
 
-e = ERB.new(File.read("./view_#{$*[0]}.swift"), nil, '-').result
-outputDir = "#{$*[1]}/output/"
+e = ERB.new(File.read("./view_macOS.swift"), nil, '-').result
+outputDir = "#{$*[0]}/output/"
 FileUtils.mkdir_p outputDir
 File.open("#{outputDir}/#{host}.swift", 'w') {|file|
     file.write e

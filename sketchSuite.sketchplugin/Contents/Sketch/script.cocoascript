@@ -299,6 +299,34 @@ function generate_file_by_names_in_ObjC() {
 
 }
 
+function export_slice(width, height) {
+  var baseRect = CGRectMake(0, 0, width, height)
+
+  var page = context.document.currentPage()
+  var item = context.selection.firstObject()
+  var r = baseRect
+
+  var artboard = MSArtboardGroup.alloc().initWithFrame(r)
+  artboard.nodeName = item.name()
+  artboard.hasBackgroundColor = true
+  artboard.backgroundColor = MSColor.colorWithNSColor(NSColor.whiteColor())
+  artboard.includeBackgroundColorInExport = false
+  page.insertLayer_atIndex(artboard, 0)
+  var layer = item.copy()
+  layer.setCenter(CGPointMake(22, 22))
+  artboard.insertLayer_atIndex(layer, 0)
+
+  var exportFormat = MSExportFormat.formatWithScale_name_fileFormat(3.0, "", "png")
+  artboard.exportOptions().insertExportFormat_atIndex(exportFormat, 0)
+  exportFormat = MSExportFormat.formatWithScale_name_fileFormat(2.0, "", "png")
+  artboard.exportOptions().insertExportFormat_atIndex(exportFormat, 0)
+  var exportRequests = MSExportRequest.exportRequestsFromExportableLayer(artboard)
+  context.document.saveExportRequest_toFile(exportRequests[0], "~/Desktop/" + artboard.nodeName() + ".png")
+
+  page.removeLayerAtIndex(0)
+  
+}
+
 function DuplicationFeature(window) {
   var r = CGRectZero
   r.origin.y = 40
@@ -461,9 +489,54 @@ function PaletteFeature(window) {
   }];
 
 }
+
+function ExportSliceFeature(window) {
+  var r = CGRectZero
+  r.origin.y = 70
+  var button = [[NSButton alloc] init]
+    button.title = " " + "export_slice" + " "
+    button.sizeToFit()
+    r.size = button.frame().size
+    r.origin.y -= r.size.height + 8
+    button.frame = r
+    window.contentView().addSubview(button)
+
+  r.origin.x += r.size.width + 10
+  var label = [NSTextField labelWithString:"width"]
+  r.size.width = label.frame().size.width
+  label.frame = r
+  window.contentView().addSubview(label)
+  
+
+  r.origin.x += r.size.width
+  r.size.width = 30
+  var widthEdit = [[NSTextField alloc]init]
+  widthEdit.frame = r
+  window.contentView().addSubview(widthEdit)
+ 
+ r.origin.x += r.size.width
+  label = [NSTextField labelWithString:"height"]
+  r.size.width = label.frame().size.width
+  label.frame = r
+  window.contentView().addSubview(label)
+
+  r.origin.x += r.size.width
+  r.size.width = 30
+  var heightEdit = [[NSTextField alloc]init]
+  heightEdit.frame = r
+  window.contentView().addSubview(heightEdit)
+
+  [button setCOSJSTargetFunction: function(){
+    var w = parseInt(widthEdit.stringValue())
+    var h = parseFloat(heightEdit.stringValue())
+    export_slice(w, h)
+  }];
+ 
+}
+
 function ExportViewFeature(window) {
   var r = CGRectZero
-  r.origin.y = 90
+  r.origin.y = 150
   var button = [[NSButton alloc] init]
     button.title = " " + "export_view" + " "
     button.sizeToFit()
@@ -592,6 +665,7 @@ Klass('Fn',{
   DuplicationFeature(window)
   ExportViewFeature(window)
   PaletteFeature(window) 
+  ExportSliceFeature(window)
 }()
 
 
