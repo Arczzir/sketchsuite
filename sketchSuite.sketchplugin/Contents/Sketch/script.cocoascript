@@ -229,6 +229,12 @@ function styleWork(lang, os) {
 }
 
 
+function selection() { // as context is a one-off
+    var doc = NSDocumentController.sharedDocumentController().currentDocument()
+    var selection = doc.selectedLayers().layers()
+    return selection
+}
+
 function selected() { // as context is a one-off
     var doc = NSDocumentController.sharedDocumentController().currentDocument()
     var selection = doc.selectedLayers().layers()
@@ -299,11 +305,16 @@ function generate_file_by_names_in_ObjC() {
 
 }
 
-function export_slice(width, height) {
+function export_slices(width, height) {
+  for (var i = 0 ;i<selection().length; i++){
+      export_slice(context.selection[i], width, height);
+  }
+}
+
+function export_slice(item, width, height) {
   var baseRect = CGRectMake(0, 0, width, height)
 
   var page = context.document.currentPage()
-  var item = context.selection.firstObject()
   var r = baseRect
 
   var artboard = MSArtboardGroup.alloc().initWithFrame(r)
@@ -321,11 +332,13 @@ function export_slice(width, height) {
   exportFormat = MSExportFormat.formatWithScale_name_fileFormat(2.0, "", "png")
   artboard.exportOptions().insertExportFormat_atIndex(exportFormat, 0)
   var exportRequests = MSExportRequest.exportRequestsFromExportableLayer(artboard)
-  context.document.saveExportRequest_toFile(exportRequests[0], "~/Desktop/" + artboard.nodeName() + ".png")
+  context.document.saveExportRequest_toFile(exportRequests[0], "~/Desktop/" + artboard.nodeName() + "@2x.png")
+  context.document.saveExportRequest_toFile(exportRequests[1], "~/Desktop/" + artboard.nodeName() + "@3x.png")
 
   page.removeLayerAtIndex(0)
   
 }
+  
 
 function DuplicationFeature(window) {
   var r = CGRectZero
@@ -529,7 +542,7 @@ function ExportSliceFeature(window) {
   [button setCOSJSTargetFunction: function(){
     var w = parseInt(widthEdit.stringValue())
     var h = parseFloat(heightEdit.stringValue())
-    export_slice(w, h)
+    export_slices(w, h)
   }];
  
 }
@@ -658,7 +671,7 @@ Klass('Fn',{
 +function(){
   runSys("/bin/mkdir", ["-p", NSTemporaryDirectory()+"output/"])
   var window = hud([
-    new Mocha.Fn("add_box", function(){add_box()}),
+    new Mocha.Fn("add_box", function(){add_text_box()}),
     new Mocha.Fn("generate_file_by_names_in_ObjC", function(){generate_file_by_names_in_ObjC()}),
   ])
   

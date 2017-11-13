@@ -123,7 +123,7 @@ var c#{i} = DAConstrains()
         //c#{i}.midY = #{midY}
         c#{i}.width = #{width}
         c#{i}.height = #{height}
-        c#{i}.updateViewFrameInBoundsRespectingFrameScale(#{@name}, in: bounds, scale: #{scale})
+        c#{i}.updateViewFrame(view: #{@name}, bounds: bounds)
 M
   end
 
@@ -275,7 +275,7 @@ result[0]["sublayers"].each_with_index {|layer, i|
     bounds = CGRect.new(layer["frame"])
     next
   end
-  
+ 
   case layer["type"]
   when "line"
     next
