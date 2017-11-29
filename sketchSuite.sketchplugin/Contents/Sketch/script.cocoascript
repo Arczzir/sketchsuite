@@ -1,9 +1,9 @@
 var onRun = function(context) {
-  String.prototype.paddingLeft = function (paddingValue) {
+String.prototype.paddingLeft = function (paddingValue) {
   return String(paddingValue + this).slice(-paddingValue.length);
 };
 
-
+var targetDirectory = NSSearchPathForDirectoriesInDomains(NSDownloadsDirectory,NSUserDomainMask,true)[0];
 
 function styleHash(style) {
   return style.font.name + "_" + style.font.size + "_" + style.color.hex 
@@ -186,7 +186,7 @@ function runSys(cmd, args) {
   
   task.environment = {"LANG": "en_US.UTF-8"} // Ruby's JSON respects this ...
 
-  task.launchPath = cmd
+  task.executableURL = [NSURL fileURLWithPath:cmd]
   task.arguments = args
 
   var pipe = NSPipe.alloc().init()
@@ -220,11 +220,11 @@ function styleWork(lang, os) {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: targetDirectory + "/output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
-  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/" + "style.rb"), lang, os, (NSTemporaryDirectory()+"output")])
+  runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/" + "style.rb"), lang, os, (targetDirectory+"/output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
+  runSys("/usr/bin/open", [targetDirectory+"/output/"])
   
 }
 
@@ -281,12 +281,12 @@ function export_view(lang, os) {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: targetDirectory + "/output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   var rbfile = "/export_view_" + lang + "_" + os + ".rb";
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + rbfile), (NSTemporaryDirectory()+"output")])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + rbfile), (targetDirectory+"/output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
+  runSys("/usr/bin/open", [targetDirectory+"/output/"])
 }
 
 
@@ -296,12 +296,12 @@ function generate_file_by_names_in_ObjC() {
 
   var s = [NSString stringWithFormat:"%@", JSON.stringify(layers)];
 
-  [s writeToFile: NSTemporaryDirectory() + "output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
+  [s writeToFile: targetDirectory + "/output/kkk.json" atomically:true encoding:NSUTF8StringEncoding error:nil]
 
   
-  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/generateObjcFileByNames.rb"), (NSTemporaryDirectory()+"output")])
+  var output = runRuby([(context.scriptPath.stringByDeletingLastPathComponent() + "/generateObjcFileByNames.rb"), (targetDirectory+"/output")])
   
-  runSys("/usr/bin/open", [NSTemporaryDirectory()+"output/"])
+  runSys("/usr/bin/open", [targetDirectory+"/output/"])
 
 }
 
@@ -669,7 +669,7 @@ Klass('Fn',{
 })
 
 +function(){
-  runSys("/bin/mkdir", ["-p", NSTemporaryDirectory()+"output/"])
+  runSys("/bin/mkdir", ["-p", targetDirectory+"/output/"])
   var window = hud([
     new Mocha.Fn("add_box", function(){add_text_box()}),
     new Mocha.Fn("generate_file_by_names_in_ObjC", function(){generate_file_by_names_in_ObjC()}),
