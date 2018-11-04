@@ -90,8 +90,8 @@ function serialize(layer, layers, name, frame) {
                 
                 x.type = "line"
                 var sl, fill, border
-                layer.styledLayer && (sl = layer.styledLayer())
-                if (border = sl.style().borders().firstObject()){
+                sl = layer.usedStyle()
+                if (border = sl.borders().firstObject()){
                     x.border = {}
                     x.border.hex = hash(border.color()) + ""
                     x.border.type = "border"
@@ -107,14 +107,14 @@ function serialize(layer, layers, name, frame) {
         case MSOvalShape:
             x.type = "basic"
             var sl, fill, border
-            layer.styledLayer && (sl = layer.styledLayer())
-            if (fill = sl.style().fills().firstObject()){
+            sl = layer.usedStyle()
+            if (fill = sl.fills().firstObject()){
                 x.fill = {}
                 x.fill.hex = hash(fill.color()) + ""
                 x.fill.type = "fill"
             }
             
-            if (border = sl.style().borders().firstObject()){
+            if (border = sl.borders().firstObject()){
                 x.border = {}
                 x.border.hex = hash(border.color()) + ""
                 x.border.type = "border"

@@ -25,26 +25,18 @@ class <%=host%>: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func resizeSubviews(withOldSize oldSize: NSSize)  {
-        var c = DAConstrains()
-        let frameScale = bounds.width / referenceFrame.width
+    override func layoutSubviews() {
         <% components.each_with_index do |x, i| %>
         <%= x.constrains(bounds, i, "frameScale")%>
         <% end %>
-    }
 
-    override func layoutSubviews() {
-        let frameScale = self.bounds.size.width / referenceFrame.size.width
+        let frameScale = bounds.size.width / referenceFrame.size.width
         let transform = CGAffineTransform(scaleX: frameScale, y: frameScale)
    
         <%- components.each_with_index do |x, i| -%>
-        <%= x.name%>.frame = CGRect(x: <%= x.frame.x%>, y: <%= x.frame.y%>, width: <%= x.frame.width%>, height: <%= x.frame.height%>).applying(transform)
+        <%= x.name%>.frame = <%= x.name%>.frame.applying(transform)
         <%- end -%>
     }
 
-    func setFrameSizeByWidthProportionally(_ width: CGFloat) {
-        frame.size.height = referenceFrame.size.height * width / referenceFrame.size.width;
-        frame.size.width = width;
-    }
 }
 
